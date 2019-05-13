@@ -23,3 +23,11 @@
 cd "$(dirname "${0}")" || exit
 
 FILES_ROOT='../files'
+
+# bash
+cp -LT "${HOME}/.bash_profile" "${FILES_ROOT}/bash/bash_profile"
+cp -LT "${HOME}/.bashrc" "${FILES_ROOT}/bash/bashrc"
+
+# sh
+cp -LT "${HOME}/.profile" "${FILES_ROOT}/sh/profile"
+cp -LT "${HOME}/.shrc" "${FILES_ROOT}/sh/shrc"

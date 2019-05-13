@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Source local POSIX sh environment:
+if test -r "${HOME}/.profile"; then
+	. "${HOME}/.profile"
+fi
+
+# Source local Bash settings (if interactive):
+if \
+	(case "${-}" in (*i*) exit 0;; esac; exit 1) \
+	&& test -r "${HOME}/.bashrc"
+then
+	. "${HOME}/.bashrc"
+fi
+
+

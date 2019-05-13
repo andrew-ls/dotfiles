@@ -1,0 +1,277 @@
+#!/usr/bin/env bash
+
+# Source global Bash settings:
+if test -r '/etc/bashrc'; then
+	. '/etc/bashrc'
+fi
+
+# Source local POSIX sh settings:
+if test -r "${HOME}/.shrc"; then
+	. "${HOME}/.shrc"
+fi
+
+# Merge Dropbox bash_history conflicts:
+(
+	HISTORY_SYNC="${SYNC_ROOT}/share/posix/bash/bash_history"
+
+	unset -v HISTORY_SYNC_CONFLICTED \
+	&& test -d "$(dirname "${HISTORY_SYNC}")" \
+	&& HISTORY_SYNC_CONFLICTED="$(
+		find "$(dirname "${HISTORY_SYNC}")" -type 'f' \
+		| grep "${HISTORY_SYNC}"' ([^)]* conflicted copy [^)]*)'
+	)"
+
+	if test "${HISTORY_SYNC_CONFLICTED}"; then
+
+		IFS="$(printf '\n!')"; IFS="${IFS%!}"
+		for HISTORY_SYNC_CONFLICT in ${HISTORY_SYNC_CONFLICTED}; do
+			diff -c "${HISTORY_SYNC_CONFLICT}" "${HISTORY_SYNC}" \
+			| patch -so "${HISTORY_SYNC}~" "${HISTORY_SYNC_CONFLICT}" \
+			&& {
+				rm "${HISTORY_SYNC_CONFLICT}"
+				mv -f "${HISTORY_SYNC}~" "${HISTORY_SYNC}";
+			}
+
+		done
+
+	fi
+)
+
+
+#===========================================================================
+# Settings
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Options (-o: enable, +o: disable)
+
+set +o posix # Enable full POSIX compatibility?
+
+#---------------------------------------------------------------------------
+# Options (-s: enable, -u: disable)
+
+shopt -s autocd # Automatically `cd` to bare directory names?
+shopt -u cdable_vars # Assume unresolvable `cd` arguments as variables?
+shopt -u cdspell # Automatically correct spelling mistakes with `cd`?
+shopt -s checkhash # Fallback to PATH search for missing hashes?
+shopt -s checkjobs # Block exiting shell with existing jobs?
+shopt -s checkwinsize # Update LINES and COLUMNS when window resized?
+shopt -s cmdhist # Collapse multi-line history commands to single line?
+shopt -s complete_fullquote # Quote metacharacters during completion?
+shopt -s direxpand # Expand variables during pathname completion?
+shopt -s dirspell # Correct spelling during pathname completion?
+shopt -u dotglob # Include dot-files during pathname completion?
+shopt -u execfail # Don't exit non-interactive shell if `exec` fails?
+shopt -s expand_aliases # Enable aliases?
+shopt -u extdebug # Enable debugging?
+shopt -s extglob # Enable pathname globbing?
+shopt -s extquote # Enable $'' and $"" within quoted variable expansions?
+shopt -s failglob # Cancel commands where globbing has no matches?
+shopt -s force_fignore # Enable `FIGNORE` functionality?
+shopt -u globasciiranges # Use 'C' locale for ranged bracket expressions?
+shopt -s globstar # Enable recursive match-all globbing with `**`?
+shopt -u gnu_errfmt # Display shell errors in standard GNU format?
+shopt -s histappend # Append history file instead of clobbering?
+shopt -s histreedit # Enable editing of failed history substitutions?
+shopt -s histverify # Expand history substitutions in editing buffer?
+shopt -s hostcomplete # Enable hostname completion in words containing `@`?
+shopt -u huponexit # Send SIGHUP to remaining jobs when exiting shell?
+shopt -u inherit_errexit # Inherit `errexit` during command substitution?
+shopt -s interactive_comments # Allow interactive shell `#` comment lines?
+shopt -u lastpipe # Run last pipeline command in shell context?
+shopt -u lithist # Use newlines instead of `;` with `cmdhist` enabled?
+shopt -u mailwarn # Warn if current mail being checked has changed?
+shopt -u no_empty_cmd_completion # Disable empty prompt command completion?
+shopt -u nocaseglob # Enable case-insensitive globbing?
+shopt -u nocasematch # Enable case-insensitive cases/comparisons?
+shopt -s nullglob # Expand globs with no matches to a null string?
+shopt -s progcomp # Enable command completion plugins?
+shopt -s promptvars # Let shell expand prompts?
+shopt -u shift_verbose # Alert when `shift` count exceeds parameters?
+shopt -s sourcepath # Enable PATH searching with `source`/`.` commands?
+shopt -u xpg_echo # Expand backslash-escape sequences with `echo`?
+
+#---------------------------------------------------------------------------
+# Environment
+
+BASH_COMPAT='' # Bash version compatibility level.
+CDPATH='.' # Paths to search for `cd`.
+EXECIGNORE='' # Patterns to ignore when searching PATH.
+FIGNORE='' # Suffixes ignored by pathname completion.
+GLOBIGNORE='' # Patterns ignored by pathname expansion.
+HISTCONTROL='ignorespace' # Command history settings.
+HISTFILE="${HOME}/.bash_history" # History file location.
+HISTFILESIZE='2000000' # Max number of lines in history file.
+HISTIGNORE='' # Command patterns ignored by history.
+HISTSIZE="${HISTFILESIZE}" # Max number of commands in history file.
+HOSTFILE='' # `/etc/hosts`-style file for hostname completion.
+IGNOREEOF='0' # Number of extra consecutive EOFs to exit shell.
+INPUTRC="${HOME}/.inputrc" # Path to `readline` configuration file.
+TMPDIR="${HOME}/.tmp" # Path to use for Bash's temporary files.
+
+#---------------------------------------------------------------------------
+# Prompt
+
+# Primary prompt:
+PS1="$(cat <<- 'EOF'
+	$(
+		# Store current command history:
+		history -a
+		# Import new command history:
+		history -n
+		UNSAFE_CHARS=' !"$&'\''()*;<>?[\]`n{|}~'
+		unset -v \
+			SCM_BRANCH \
+			SCM_ISREPO \
+			SCM_ISWORKTREE \
+			SCM_MODIFIED \
+			SCM_PROMPT \
+			SCM_ROOT \
+			SCM_STAGED \
+			SCM_UNTRACKED
+		if git rev-parse --absolute-git-dir > /dev/null 2>&1; then
+			SCM_ISREPO="$(
+				case "$(git rev-parse --is-inside-git-dir)" in
+					('true') printf '1' ;;
+					(*) printf '' ;;
+				esac		
+			)"
+			if test "${SCM_ISREPO}"; then
+				SCM_ROOT="$(
+					if test "$(git rev-parse --git-dir)" = '.'; then
+						if test "$(basename "$(dirname "$(pwd)")")" \
+							= 'worktrees'
+						then
+							cd ..
+							printf '%s' "$(git rev-parse --git-dir)"
+						else
+							pwd
+						fi
+					else
+						pwd
+					fi
+				)"
+			else
+				SCM_ROOT="$(git rev-parse --show-toplevel)"
+				SCM_BRANCH="$(
+					git branch \
+					| /usr/bin/grep '^\*' \
+					| /usr/bin/cut -d ' ' -f '2-'
+				)"
+				SCM_STAGED="$(
+					git diff --name-only --cached \
+					| /usr/bin/wc -l
+				)"
+				SCM_MODIFIED="$(
+					git diff --name-only \
+					| /usr/bin/wc -l
+				)"
+				SCM_UNTRACKED="$(
+					git ls-files --others --exclude-standard "${SCM_ROOT}" \
+					| /usr/bin/wc -l
+				)"
+			fi
+		fi
+		if test "${SCM_ROOT}" || test "${SCM_ISREPO}"; then
+			GENERATE_SCM_PROMPT() {(
+				if test "${SCM_ISREPO}"; then
+					printf '\n%2s ' \
+						'🔀'
+					printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+						"$(/usr/bin/basename "${SCM_ROOT}" '.git')" \
+						'(repository)'
+				else
+					printf '\n%2s ' \
+						'🔀'
+					printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+						"$(/usr/bin/basename "${SCM_ROOT}")" \
+						'on' \
+						"${SCM_BRANCH}" \
+					| sed 's/[[:space:]]*$//'
+					printf '\033[2m%s\033[0m\033[1m%s\033[0m ' \
+						'±' \
+						"${SCM_STAGED}" \
+						'Δ' \
+						"${SCM_MODIFIED}" \
+						'⋯' \
+						"${SCM_UNTRACKED}"\
+					| sed 's/[[:space:]]*$//'
+				fi
+			)}
+			SCM_PROMPT="$(GENERATE_SCM_PROMPT)"
+		fi
+		printf '\n%s ' \
+			'👤'
+		printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+			"${LOGNAME}" \
+			'in' \
+			"$(
+				SCM_ROOT_ESCAPED="$(
+					printf '%s' "${SCM_ROOT}" \
+					| /usr/bin/sed 's:/:\\\/:g'
+				)"
+				printf '%s' "${PWD}" \
+				| /usr/bin/sed '
+					s/'"${SCM_ROOT_ESCAPED:-🔀}"'/🔀 /;
+					s/^🔀 $/🔀/;
+				'
+			)" \
+			'at' \
+			"$(/usr/bin/date '+%H:%M:%S')" \
+		| sed 's/[[:space:]]*$//'
+		printf '%s' "${SCM_PROMPT:-}"
+		printf '\n%s ' \
+			'💲'
+	)
+	EOF
+)"
+
+# Continuation prompt:
+PS2="$(
+	printf '\033[1m%2s\033[0m ' \
+		'🔻'
+)"
+
+# Selection prompt:
+PS3="$(
+	printf '\e[1m%2s\033[0m ' \
+		'❓'
+)"
+
+# Trace prompt:
+PS4="$(
+	printf '\033[1m%2s\033[0m ' \
+		'➕'
+)"
+
+# Prompt command:
+read -r -d '' PROMPT_COMMAND <<- 'EOF'
+	# Incorporate VTE features.
+	if test "${VTE_VERSION}"; then
+		__vte_prompt_command;
+	fi;
+
+	# Set window title.
+	printf '\033]0;%s\007' "$(
+		printf '%s @ %s : %s' \
+			"${LOGNAME}" \
+			"$(
+				test "${#HOSTNAME}" -gt '16' \
+				&& printf '%s' "${HOSTNAME:0:15}…" \
+				|| printf '%s' "${HOSTNAME}"
+			)" \
+			"${PWD}"
+	)"
+
+	# Print time before command execution.
+	trap '
+		trap DEBUG
+		printf '\''%2s '\'' \
+			'\''🕔'\''
+		printf '\''\033[1m%s\033[0m'\'' \
+			"$(/usr/bin/date '\''+%H:%M:%S'\'')"
+		printf '\''\n'\''
+	' DEBUG
+	EOF
+
+

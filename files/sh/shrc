@@ -1,0 +1,359 @@
+#!/bin/sh
+
+# Source global POSIX sh settings:
+if test -r '/etc/shrc'; then
+	. '/etc/shrc'
+fi
+
+
+#===========================================================================
+# Init
+#---------------------------------------------------------------------------
+
+# Import VTE configuration:
+if test "${VTE_VERSION}"; then
+    . "/etc/profile.d/vte.sh"
+fi
+
+# Import `thefuck` functionality:
+if test "$(command -v thefuck)"; then
+	eval "$(thefuck --alias)"
+fi
+
+
+#===========================================================================
+# Settings
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Options (-o: enable, +o: disable)
+
+set +o allexport # Automatically export all assignments?
+set +o errexit # Exit shell on any error?
+set +o ignoreeof # Prevent shell exiting with EOF?
+set -o monitor # Enable job control and monitoring?
+set -o noclobber # Prevent redirection overwriting existing files?
+set +o noglob # Disable pathname expansion?
+set +o noexec # Disable command execution?
+set +o nolog # Disable command history?
+
+#---------------------------------------------------------------------------
+# Environment
+
+HISTFILE="${HOME}/.sh_history" # History file location.
+HISTSIZE='1000' # Max number of commands in history file.
+
+#---------------------------------------------------------------------------
+# Prompt
+
+PS1='$ ' # Primary prompt.
+PS2='> ' # Continuation prompt.
+PS3='? ' # Selection prompt.
+PS4='+ ' # Trace prompt.
+
+
+#===========================================================================
+# Functions
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Internal
+
+_EXISTS_COMMAND() {(
+	test "$(command -v "${*}")"
+)}
+
+_EXISTS_COMMAND_STANDARD() {(
+	test "$(command -pv "${*}")"
+)}
+
+_EXISTS_FLATPAK() {(
+	flatpak list 2> /dev/null \
+	| tail -n +1 \
+	| cut -f 2 \
+	| grep -q "${*}"
+)}
+
+_IS_GREP_GNU() {(
+	grep --version \
+	| head -n 1 \
+	| grep -q 'GNU grep'
+)}
+
+
+#===========================================================================
+# Aliases
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Custom (basic)
+
+# edit:
+#   Execute default editor.
+alias 'edit'="${EDITOR}"
+
+# pager:
+#   Execute default pager.
+alias 'pager'="${PAGER}"
+
+#---------------------------------------------------------------------------
+# Custom (dependent)
+
+# awk
+if _EXISTS_COMMAND_STANDARD 'awk'; then
+
+	# unik:
+	#   Like `uniq -u`, but unordered.
+	alias 'unik'="awk '! uniq[\$0]++'"
+
+fi
+
+# du
+if _EXISTS_COMMAND_STANDARD 'du'; then
+
+	# duh:
+	#   A nicer presentation for `du`. Like, duh.
+	alias 'duh'='du -chsL -- .*[!.] *'
+
+fi
+
+# grep
+if _EXISTS_COMMAND_STANDARD 'grep'; then
+
+	if _IS_GREP_GNU; then
+
+		# cgrep:
+		#   `grep` with forced color.
+		alias 'cgrep'='grep --color=always'
+
+	fi
+
+fi
+
+# head
+if _EXISTS_COMMAND_STANDARD 'head'; then
+
+	# 1st:
+	#   Returns only the first line.
+	alias '1st'='head -n 1'
+
+fi
+
+# jobs
+if _EXISTS_COMMAND_STANDARD 'jobs'; then
+
+	# killjobs:
+	#   Send the kill signal to all jobs.
+	#   Uses job IDs instead of process IDs.
+	alias 'killjobs'='kill $(jobs | sed "s/^\[\([[:digit:]]\)\].*/%\1/")'
+
+fi
+
+# less
+if _EXISTS_COMMAND_STANDARD 'less'; then
+
+	# lesser:
+	#   systemd-style paging.
+	alias 'lesser'='less -FKMRS'
+
+fi
+
+# printf
+if _EXISTS_COMMAND_STANDARD 'printf'; then
+
+	# cls:
+	#   Clears the terminal buffer.
+	alias 'cls'="printf '\\033c'"
+
+	# res:
+	#   Resets Xterm size (to 80x40).
+	alias 'res'="printf '\\033[8;40;80t'"
+
+fi
+
+# ps
+if _EXISTS_COMMAND_STANDARD 'ps'; then
+
+	# psxo:
+	#   Displays formatted user TTY processes.
+	alias 'psxo'='ps -xo pgid,pid,comm,args'
+
+fi
+
+# python
+if _EXISTS_COMMAND_STANDARD 'python'; then
+
+	# json-tool:
+	#   Validates and pretty-prints JSON standard input.
+	alias 'json-tool'='python -m json.tool'
+
+fi
+
+# sed
+if _EXISTS_COMMAND_STANDARD 'sed'; then
+
+	# sed-jsonify:
+	#   Convert lines to JSON array.
+	alias 'sed-jsonify'=' \
+		sed -e '\''
+			s|^|"|g;
+			s|$|"|g;
+		'\'' \
+		| sed -e '\''
+			:a;
+			N;
+			$!ba;
+			s|\n|, |g;
+		'\'' \
+		| sed -e '\''
+			s|^|\[|g;
+			s|$|\]|g;
+		'\'' \
+	'
+
+	# sed-lines:
+	#   Remove empty lines.
+	alias 'sed-lines'=' \
+		sed -e '\''
+			/^$/d;
+		'\'' \
+	'
+
+	# sed-trail:
+	#   Removes trailing newlines.
+	alias 'sed-trailing'=' \
+		sed -e '\''
+			${/^$/d;};
+		'\'' \
+	'
+
+fi
+
+# sort
+if _EXISTS_COMMAND_STANDARD 'sort'; then
+
+	# sortc:
+	#   Sorts with 'C' locale.
+	alias 'sortc'='LC_ALL=C sort'
+
+fi
+
+# vim
+if _EXISTS_COMMAND_STANDARD 'vim'; then
+
+	# vi:
+	#   Start Vim in a vi-like mode.
+	alias 'vi'=' \
+		command -p vim \
+			--noplugin \
+			-u "${HOME}/.exrc" \
+			-U NONE \
+			-i NONE \
+			-C \
+	'
+
+fi
+
+# wine
+if _EXISTS_COMMAND_STANDARD 'wine'; then
+
+	# wine-install:
+	#   Install an installer.
+	alias 'wine-install'='wine start /ProgIDOpen Msi.Patch'
+
+fi
+
+#---------------------------------------------------------------------------
+# Applications
+
+# Crossover
+if _EXISTS_COMMAND '/opt/cxoffice/bin/crossover'; then
+
+	# Alias non-PATH binary.
+	alias 'crossover'='/opt/cxoffice/bin/crossover'
+
+fi
+
+# Dippi
+if _EXISTS_COMMAND_STANDARD 'com.github.cassidyjames.dippi'; then
+
+	# Alias shortname.
+	alias 'dippi'='com.github.cassidyjames.dippi'
+fi
+
+# Nautilus
+if _EXISTS_COMMAND_STANDARD 'nautilus'; then
+
+	# Alias shortname.
+	alias 'files'='nautilus'
+
+fi
+
+# Notejot
+if _EXISTS_COMMAND_STANDARD 'com.github.lainsce.notejot'; then
+
+	# Alias shortname.
+	alias 'notejot'='com.github.lainsce.notejot'
+
+fi
+
+# PB for Desktop
+if _EXISTS_COMMAND_STANDARD 'pb-for-desktop'; then
+
+	# Start with an AppIndicator.
+	alias 'pb-for-desktop'='env XDG_CURRENT_DESKTOP=Unity pb-for-desktop'
+
+fi
+
+# Vim (X11)
+if _EXISTS_COMMAND_STANDARD 'vimx'; then
+
+	# Alias default `vim` to use X11.
+	alias 'vim'='vimx'
+
+fi
+
+# Yarn
+if _EXISTS_COMMAND_STANDARD 'yarnpkg'; then
+
+	# Alias alternative name.
+	alias 'yarn'='yarnpkg'
+
+fi
+
+#---------------------------------------------------------------------------
+# Applications (Flatpak shortnames)
+
+# Discord
+if _EXISTS_FLATPAK 'com.discordapp.Discord'; then
+	alias 'discord'='flatpak run com.discordapp.Discord'
+fi
+
+# PulseEffects
+if _EXISTS_FLATPAK 'com.github.wwmm.pulseeffects'; then
+	alias 'pulseeffects'='flatpak run com.github.wwmm.pulseeffects'
+fi
+
+# Slack
+if _EXISTS_FLATPAK 'com.slack.Slack'; then
+	alias 'slack'='flatpak run com.slack.Slack'
+fi
+
+# Snes9x
+if _EXISTS_FLATPAK 'com.snes9x.Snes9x'; then
+	alias 'snes9x'='flatpak run com.snes9x.Snes9x'
+fi
+
+# Spotify
+if _EXISTS_FLATPAK 'com.spotify.Client'; then
+	alias 'spotify'='flatpak run com.spotify.Client'
+fi
+
+#---------------------------------------------------------------------------
+# Important
+
+alias 'lenny'="printf '%s\\n' '( ͡° ͜ʖ ͡°)'"
+alias 'shrug'="printf '%s\\n' '¯\_(ツ)_/¯'"
+alias 'tableflip'="printf '%s\\n' '(ノ°□°)ノ︵┻━┻'"
+
+

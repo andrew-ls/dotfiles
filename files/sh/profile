@@ -1,0 +1,141 @@
+#!/bin/sh
+
+# Source local POSIX sh settings (if interactive):
+if \
+	(case "${-}" in (*i*) exit 0;; esac; exit 1) \
+	&& test -r "${HOME}/.shrc"
+then
+	. "${HOME}/.shrc"
+fi
+
+
+#===========================================================================
+# Localization
+#---------------------------------------------------------------------------
+
+export LANG="en_GB.UTF-8"
+
+
+#===========================================================================
+# Path
+#---------------------------------------------------------------------------
+
+export PATH="$(
+	IFS=':'
+	unset -v \
+		path_new \
+		path_old
+	path_old="${PATH}"
+	while read -r DIRECTORY; do
+		path_old="$(
+			printf '%s:' "${path_old}" \
+			| sed '
+				s/'"$(
+					printf '%s' "${DIRECTORY}" \
+					| sed 's:/:\\/:g'
+				)"'://g;
+				s/:$//;
+			'
+		)"
+		path_new="${path_new:+${path_new}:}${DIRECTORY}"
+	done <<- EOF
+		${XDG_DATA_HOME:-$HOME/.local/share}/bash
+		${XDG_DATA_HOME:-${HOME}/.local/share}/java
+		${XDG_DATA_HOME:-${HOME}/.local/share}/ruby
+		${XDG_DATA_HOME:-${HOME}/.local/share}/sh
+		${HOME}/.local/bin
+		${HOME}/bin
+		${HOME}/go/bin
+		/var/lib/flatpak/exports/bin
+		${HOME}/Documents/Git/github.com/andrew-ls/gantt/bin
+		${HOME}/Documents/Git/github.com/andrew-ls/termpong/bin
+		EOF
+	printf '%s\n' "${path_new}${path_old:+:${path_old}}"
+)"
+
+
+#===========================================================================
+# Libraries
+#---------------------------------------------------------------------------
+
+export GTK3_MODULES="$(
+	GTK3_MODULES_ADD="$(
+		printf '%s:' \
+			'/usr/local/lib/libplotinus.so' \
+		| sed 's/:$//'
+	)"
+	GTK3_MODULES_OLD="$(
+		printf '%s:' "${GTK3_MODULES}" \
+		| sed "s/$(
+			printf '%s:' "${GTK3_MODULES_ADD}" \
+			| sed 's:/:\\/:g'
+		)//" \
+		| sed 's/:$//'
+	)"
+	printf '%s' "${GTK3_MODULES_OLD:+${GTK3_MODULES_OLD}:}${GTK3_MODULES_ADD}"
+)"
+
+
+#===========================================================================
+# Environment
+#---------------------------------------------------------------------------
+
+# Load sync variables:
+. "${HOME}/Dropbox/Sync/profile"
+
+# Default terminal text editor:
+export EDITOR=" \
+	f() {
+		SETTINGS='$(printf '%s\n' \
+			'let g:gitgutter_enabled = 0' \
+			'source ~/.vimrc' \
+			'set nonumber norelativenumber'
+		)'
+		if test \
+			\"\$(cat \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" 2> /dev/null)\" \
+				!= \"\${SETTINGS}\"
+		then
+			rm \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" 2> /dev/null
+			printf '%s\n' \"\${SETTINGS}\" \
+			> \"\${TMPDIR:-/tmp}/EDITOR-vimrc\"
+		fi
+		if test \"$(command -v vimx)\"; then
+			vimx -u \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" \"\${@}\"
+		elif test \"$(command -v vim)\"; then
+			vim -u \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" \"\${@}\"
+		else
+			vi \"\${@}\"
+		fi
+	}; f \
+"
+
+# Default `fc` editor:
+export FCEDIT="${EDITOR}"
+
+# Default pager:
+export PAGER='less -FKMRS'
+
+# Default shell:
+export SHELL='/usr/bin/bash'
+
+# Default Wine prefix:
+export WINEPREFIX="${HOME}/.wine"
+
+
+#===========================================================================
+# Application Preferences
+#---------------------------------------------------------------------------
+
+# Enable dark GTK theme for NeovimGtk:
+export NVIM_GTK_PREFER_DARK_THEME='1'
+
+# ShellCheck default options:
+#   SC1090: Can't follow non-constant source.
+export SHELLCHECK_OPTS=' \
+	-e SC1090 \
+'
+
+# Set default systemd pager:
+export SYSTEMD_PAGER='less -FKMRS'
+
+
