@@ -58,8 +58,8 @@ shopt -s checkjobs # Block exiting shell with existing jobs?
 shopt -s checkwinsize # Update LINES and COLUMNS when window resized?
 shopt -s cmdhist # Collapse multi-line history commands to single line?
 shopt -s complete_fullquote # Quote metacharacters during completion?
-shopt -s direxpand # Expand variables during pathname completion?
-shopt -s dirspell # Correct spelling during pathname completion?
+shopt -u direxpand # Expand variables during pathname completion?
+shopt -u dirspell # (direxpand) Correct spelling during pathname completion?
 shopt -u dotglob # Include dot-files during pathname completion?
 shopt -u execfail # Don't exit non-interactive shell if `exec` fails?
 shopt -s expand_aliases # Enable aliases?
