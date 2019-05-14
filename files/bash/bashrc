@@ -66,7 +66,7 @@ shopt -s expand_aliases # Enable aliases?
 shopt -u extdebug # Enable debugging?
 shopt -s extglob # Enable pathname globbing?
 shopt -s extquote # Enable $'' and $"" within quoted variable expansions?
-shopt -s failglob # Cancel commands where globbing has no matches?
+shopt -u failglob # Cancel commands where globbing has no matches?
 shopt -s force_fignore # Enable `FIGNORE` functionality?
 shopt -u globasciiranges # Use 'C' locale for ranged bracket expressions?
 shopt -s globstar # Enable recursive match-all globbing with `**`?
@@ -84,7 +84,7 @@ shopt -u mailwarn # Warn if current mail being checked has changed?
 shopt -u no_empty_cmd_completion # Disable empty prompt command completion?
 shopt -u nocaseglob # Enable case-insensitive globbing?
 shopt -u nocasematch # Enable case-insensitive cases/comparisons?
-shopt -s nullglob # Expand globs with no matches to a null string?
+shopt -u nullglob # Expand globs with no matches to a null string?
 shopt -s progcomp # Enable command completion plugins?
 shopt -s promptvars # Let shell expand prompts?
 shopt -u shift_verbose # Alert when `shift` count exceeds parameters?
