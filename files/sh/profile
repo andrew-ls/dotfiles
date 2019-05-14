@@ -41,6 +41,7 @@ export PATH="$(
 	done <<- EOF
 		${XDG_DATA_HOME:-$HOME/.local/share}/bash
 		${XDG_DATA_HOME:-${HOME}/.local/share}/java
+		${XDG_DATA_HOME:-${HOME}/.local/share}/python
 		${XDG_DATA_HOME:-${HOME}/.local/share}/ruby
 		${XDG_DATA_HOME:-${HOME}/.local/share}/sh
 		${HOME}/.local/bin
