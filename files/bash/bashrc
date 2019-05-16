@@ -177,18 +177,18 @@ PS1="$(cat <<- 'EOF'
 				if test "${SCM_ISREPO}"; then
 					printf '\n%2s ' \
 						'🔀'
-					printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+					printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 						"$(/usr/bin/basename "${SCM_ROOT}" '.git')" \
 						'(repository)'
 				else
 					printf '\n%2s ' \
 						'🔀'
-					printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+					printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 						"$(/usr/bin/basename "${SCM_ROOT}")" \
 						'on' \
 						"${SCM_BRANCH}" \
 					| sed 's/[[:space:]]*$//'
-					printf '\033[2m%s\033[0m\033[1m%s\033[0m ' \
+					printf '\[\033[2m\]%s\[\033[0m\033[1m\]%s\[\033[0m\] ' \
 						'±' \
 						"${SCM_STAGED}" \
 						'Δ' \
@@ -202,7 +202,7 @@ PS1="$(cat <<- 'EOF'
 		fi
 		printf '\n%s ' \
 			'👤'
-		printf '\033[1m%s\033[0m \033[2m%s\033[0m ' \
+		printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 			"${LOGNAME}" \
 			'in' \
 			"$(
@@ -228,19 +228,19 @@ PS1="$(cat <<- 'EOF'
 
 # Continuation prompt:
 PS2="$(
-	printf '\033[1m%2s\033[0m ' \
+	printf '\[\033[1m\]%2s\[\033[0m\] ' \
 		'🔻'
 )"
 
 # Selection prompt:
 PS3="$(
-	printf '\e[1m%2s\033[0m ' \
+	printf '\[\e[1m\]%2s\[\033[0m\] ' \
 		'❓'
 )"
 
 # Trace prompt:
 PS4="$(
-	printf '\033[1m%2s\033[0m ' \
+	printf '\[\033[1m\]%2s\[\033[0m\] ' \
 		'➕'
 )"
 
