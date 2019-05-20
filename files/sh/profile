@@ -17,64 +17,61 @@ export LANG="en_GB.UTF-8"
 
 
 #===========================================================================
+# Functions
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Internal
+
+_SET_ADD() {
+	SET_NAME="${1:?}"
+	SET_VALUE="$(eval printf '%s' "\$${1:?}")"
+	DELIMITER="${2:?}"
+	ADDITION="${3:?}"
+	TOK="$(
+		if test "${DELIMITER}" == ':'; then
+			printf ','
+		else
+			printf ':'
+		fi
+	)"
+	ADDITION_ESCAPED="$(
+		printf '%s' "${ADDITION}" \
+		| sed 's/${TOK}/\\${TOK}/g'
+	)"
+	eval "${SET_NAME}"="$(
+		printf '%s' "${SET_VALUE}" "${DELIMITER}" \
+		| sed "
+			s${TOK}${ADDITION_ESCAPED}${DELIMITER}${TOK}${TOK}g
+			s${TOK}${DELIMITER}\$${TOK}${TOK}
+		"
+	)"
+	eval "${SET_NAME}"="\${${SET_NAME}:+\${${SET_NAME}}${DELIMITER}}${ADDITION}"
+}
+
+
+#===========================================================================
 # Path
 #---------------------------------------------------------------------------
 
-export PATH="$(
-	IFS=':'
-	unset -v \
-		path_new \
-		path_old
-	path_old="${PATH}"
-	while read -r DIRECTORY; do
-		path_old="$(
-			printf '%s:' "${path_old}" \
-			| sed '
-				s/'"$(
-					printf '%s' "${DIRECTORY}" \
-					| sed 's:/:\\/:g'
-				)"'://g;
-				s/:$//;
-			'
-		)"
-		path_new="${path_new:+${path_new}:}${DIRECTORY}"
-	done <<- EOF
-		${XDG_DATA_HOME:-$HOME/.local/share}/bash
-		${XDG_DATA_HOME:-${HOME}/.local/share}/java
-		${XDG_DATA_HOME:-${HOME}/.local/share}/python
-		${XDG_DATA_HOME:-${HOME}/.local/share}/ruby
-		${XDG_DATA_HOME:-${HOME}/.local/share}/sh
-		${HOME}/.local/bin
-		${HOME}/bin
-		${HOME}/go/bin
-		/var/lib/flatpak/exports/bin
-		${HOME}/Documents/Git/github.com/andrew-ls/gantt/bin
-		${HOME}/Documents/Git/github.com/andrew-ls/termpong/bin
-		EOF
-	printf '%s\n' "${path_new}${path_old:+:${path_old}}"
-)"
+_SET_ADD PATH : "${XDG_DATA_HOME:-$HOME/.local/share}/bash"
+_SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/java"
+_SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/python"
+_SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/ruby"
+_SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/sh"
+_SET_ADD PATH : "${HOME}/.local/bin"
+_SET_ADD PATH : "${HOME}/bin"
+_SET_ADD PATH : "${HOME}/go/bin"
+_SET_ADD PATH : '/var/lib/flatpak/exports/bin'
+_SET_ADD PATH : "${HOME}/Documents/Git/github.com/andrew-ls/gantt/bin"
+_SET_ADD PATH : "${HOME}/Documents/Git/github.com/andrew-ls/termpong/bin"
 
 
 #===========================================================================
 # Libraries
 #---------------------------------------------------------------------------
 
-export GTK3_MODULES="$(
-	GTK3_MODULES_ADD="$(
-		printf '%s:' \
-			'/usr/local/lib/libplotinus.so' \
-		| sed 's/:$//'
-	)"
-	GTK3_MODULES_OLD="$(
-		printf '%s:' "${GTK3_MODULES}" \
-		| sed "s/$(
-			printf '%s:' "${GTK3_MODULES_ADD}" \
-			| sed 's:/:\\/:g'
-		)//" \
-		| sed 's/:$//'
-	)"
-	printf '%s' "${GTK3_MODULES_OLD:+${GTK3_MODULES_OLD}:}${GTK3_MODULES_ADD}"
-)"
+_SET_ADD GTK3_MODULES : '/usr/local/lib/libplotinus.so'
 
 
 #===========================================================================
