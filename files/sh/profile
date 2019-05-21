@@ -69,6 +69,17 @@ _SET_ADD PATH : '/var/lib/flatpak/exports/bin'
 _SET_ADD PATH : "${HOME}/Documents/Git/github.com/andrew-ls/gantt/bin"
 _SET_ADD PATH : "${HOME}/Documents/Git/github.com/andrew-ls/termpong/bin"
 
+test "${STEAM_LIBRARY_FOLDERS}" \
+&& _SET_ADD PATH : "$(
+	IFS=':'
+	unset -v \
+		paths
+	for LIBRARY in ${STEAM_LIBRARY_FOLDERS}; do
+		paths="${paths:+${paths}:}${LIBRARY}/steamapps"
+	done
+	printf '%s' "${paths}"
+)"
+
 
 #===========================================================================
 # Libraries
