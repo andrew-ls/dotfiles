@@ -334,6 +334,11 @@ if _EXISTS_FLATPAK 'com.github.wwmm.pulseeffects'; then
 	alias 'pulseeffects'='flatpak run com.github.wwmm.pulseeffects'
 fi
 
+# RetroArch
+if _EXISTS_FLATPAK 'org.libretro.RetroArch'; then
+	alias 'retroarch'='flatpak run org.libretro.RetroArch'
+fi
+
 # Slack
 if _EXISTS_FLATPAK 'com.slack.Slack'; then
 	alias 'slack'='flatpak run com.slack.Slack'
