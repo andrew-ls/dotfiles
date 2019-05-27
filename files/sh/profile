@@ -65,6 +65,7 @@ _SET_ADD() {
 # Path
 #---------------------------------------------------------------------------
 
+_SET_ADD PATH --prefix : "${XDG_DATA_HOME:-${HOME}/.local/share}/sh/launch"
 _SET_ADD PATH : "${XDG_DATA_HOME:-$HOME/.local/share}/bash"
 _SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/java"
 _SET_ADD PATH : "${XDG_DATA_HOME:-${HOME}/.local/share}/python"
