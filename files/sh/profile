@@ -29,8 +29,12 @@ export LANG="en_GB.UTF-8"
 _SET_ADD() {
 	SET_NAME="${1:?}"
 	SET_VALUE="$(eval printf '%s' "\$${1:?}")"
+	PREFIX="$(test "${2}" == '--prefix' && printf 'true')"
+	test "${PREFIX}" && shift
 	DELIMITER="${2:?}"
 	ADDITION="${3:?}"
+	set --
+
 	TOK="$(
 		if test "${DELIMITER}" == ':'; then
 			printf ','
@@ -49,7 +53,11 @@ _SET_ADD() {
 			s${TOK}${DELIMITER}\$${TOK}${TOK}
 		"
 	)"
-	eval "${SET_NAME}"="\${${SET_NAME}:+\${${SET_NAME}}${DELIMITER}}${ADDITION}"
+	if test "${PREFIX}"; then
+		eval "${SET_NAME}"="${ADDITION}\${${SET_NAME}:+${DELIMITER}\${${SET_NAME}}}"
+	else
+		eval "${SET_NAME}"="\${${SET_NAME}:+\${${SET_NAME}}${DELIMITER}}${ADDITION}"
+	fi
 }
 
 
