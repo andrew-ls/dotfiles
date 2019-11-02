@@ -263,6 +263,9 @@ read -r -d '' PROMPT_COMMAND <<- 'EOF'
 			"${PWD}"
 	)"
 
+	# Store `ps aux` output.
+	PS_AUX="$(ps aux)"
+
 	# Print time before command execution.
 	trap '
 		trap DEBUG
@@ -274,4 +277,15 @@ read -r -d '' PROMPT_COMMAND <<- 'EOF'
 	' DEBUG
 	EOF
 
+
+#===========================================================================
+# Aliases
+#---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Custom
+
+# psaux:
+#   Prints the current `ps aux` output stored in PS_AUX.
+alias 'psaux'='printf '\''%s\n'\'' "${PS_AUX}"'
 
