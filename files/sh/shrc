@@ -329,6 +329,11 @@ if _EXISTS_FLATPAK 'com.discordapp.Discord'; then
 	alias 'discord'='flatpak run com.discordapp.Discord'
 fi
 
+# Marker
+if _EXISTS_FLATPAK 'com.github.fabiocolacio.marker'; then
+	alias 'marker'='com.github.fabiocolacio.marker'
+fi
+
 # PulseEffects
 if _EXISTS_FLATPAK 'com.github.wwmm.pulseeffects'; then
 	alias 'pulseeffects'='flatpak run com.github.wwmm.pulseeffects'
