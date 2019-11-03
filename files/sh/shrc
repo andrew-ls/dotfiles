@@ -22,6 +22,35 @@ fi
 
 
 #===========================================================================
+# Fonts
+#---------------------------------------------------------------------------
+
+# Default font:
+FONTS='default8x16'
+
+# Machine overrides:
+case "$(uname -n | cut -s -d '.' -f 3-)" in
+	# andrew-ls.desktop.*
+	('bc32b0b3')
+		FONTS="ter-124n sun12x22 ${FONTS}"
+		;;
+	# andrew-ls.laptop.*
+	('264c0368')
+		FONTS="ter-132n latarcyrheb-sun32 ${FONTS}"
+		;;
+esac
+
+# Set console font (if virtual console):
+case "$(tty)" in (/dev/tty[0-9]*)
+	for FONT in ${FONTS}; do
+		setfont "${FONT}" 2> /dev/null \
+		&& break
+	done
+	;;
+esac
+
+
+#===========================================================================
 # Settings
 #---------------------------------------------------------------------------
 
