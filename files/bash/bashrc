@@ -115,6 +115,11 @@ TMPDIR="${HOME}/.tmp" # Path to use for Bash's temporary files.
 # Primary prompt:
 PS1="$(cat <<- 'EOF'
 	$(
+		print_widechar() {(
+			CHAR="${1:?}"
+			printf '\[\033[s\]  \[\033[u%s\033[u\033[2C\]' \
+				"${CHAR}"
+		)}
 		# Store current command history:
 		history -a
 		# Import new command history:
@@ -176,13 +181,13 @@ PS1="$(cat <<- 'EOF'
 			GENERATE_SCM_PROMPT() {(
 				if test "${SCM_ISREPO}"; then
 					printf '\n%2s ' \
-						'🔀'
+						"$(print_widechar '🔀')"
 					printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 						"$(/usr/bin/basename "${SCM_ROOT}" '.git')" \
 						'(repository)'
 				else
 					printf '\n%2s ' \
-						'🔀'
+						"$(print_widechar '🔀')"
 					printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 						"$(/usr/bin/basename "${SCM_ROOT}")" \
 						'on' \
@@ -201,7 +206,7 @@ PS1="$(cat <<- 'EOF'
 			SCM_PROMPT="$(GENERATE_SCM_PROMPT)"
 		fi
 		printf '\n%s ' \
-			'👤'
+			"$(print_widechar '👤')"
 		printf '\[\033[1m\]%s\[\033[0m\] \[\033[2m\]%s\[\033[0m\] ' \
 			"${LOGNAME}" \
 			'in' \
@@ -211,17 +216,20 @@ PS1="$(cat <<- 'EOF'
 					| /usr/bin/sed 's:/:\\\/:g'
 				)"
 				printf '%s' "${PWD}" \
-				| /usr/bin/sed '
-					s/'"${SCM_ROOT_ESCAPED:-🔀}"'/🔀 /;
-					s/^🔀 $/🔀/;
-				'
+				| {
+					if test "${SCM_ROOT_ESCAPED}"; then
+						/usr/bin/sed "s/${SCM_ROOT_ESCAPED}/$(print_widechar '🔀')/"
+					else
+						cat
+					fi
+				}
 			)" \
 			'at' \
 			"$(/usr/bin/date '+%H:%M:%S')" \
 		| sed 's/[[:space:]]*$//'
 		printf '%s' "${SCM_PROMPT:-}"
 		printf '\n%s ' \
-			'💲'
+			"$(print_widechar '💲')"
 	)
 	EOF
 )"
