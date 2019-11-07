@@ -147,12 +147,6 @@ export WINEPREFIX="${HOME}/.wine"
 # Enable dark GTK theme for NeovimGtk:
 export NVIM_GTK_PREFER_DARK_THEME='1'
 
-# ShellCheck default options:
-#   SC1090: Can't follow non-constant source.
-export SHELLCHECK_OPTS=' \
-	-e SC1090 \
-'
-
 # Set default systemd pager:
 export SYSTEMD_PAGER='less -FKMRS'
 
