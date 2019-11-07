@@ -102,30 +102,21 @@ _SET_ADD GTK3_MODULES : '/usr/local/lib/libplotinus.so'
 #---------------------------------------------------------------------------
 
 # Default terminal text editor:
-export EDITOR=" \
-	f() {
-		SETTINGS='$(printf '%s\n' \
-			'let g:gitgutter_enabled = 0' \
-			'source ~/.vimrc' \
-			'set nonumber norelativenumber'
-		)'
-		if test \
-			\"\$(cat \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" 2> /dev/null)\" \
-				!= \"\${SETTINGS}\"
-		then
-			rm \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" 2> /dev/null
-			printf '%s\n' \"\${SETTINGS}\" \
-			> \"\${TMPDIR:-/tmp}/EDITOR-vimrc\"
-		fi
-		if test \"$(command -v vimx)\"; then
-			vimx -u \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" \"\${@}\"
-		elif test \"$(command -v vim)\"; then
-			vim -u \"\${TMPDIR:-/tmp}/EDITOR-vimrc\" \"\${@}\"
-		else
-			vi \"\${@}\"
-		fi
-	}; f \
-"
+export EDITOR="$(
+	if test -r "${HOME}/.vimrc.EDITOR"; then
+		VIMRC="${HOME}/.vimrc.EDITOR"
+	else
+		VIMRC="${HOME}/.vimrc"
+	fi
+
+	if test "$(command -v vimx)"; then
+		printf '%s\n' "vimx -u '${VIMRC}'"
+	elif test "$(command -v vim)"; then
+		printf '%s\n' "vim -u '${VIMRC}'"
+	else
+		printf '%s\n' 'vi'
+	fi
+)"
 
 # Default `fc` editor:
 export FCEDIT="${EDITOR}"
